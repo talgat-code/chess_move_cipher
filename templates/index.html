@@ -18,7 +18,6 @@
       Chess Move Cipher
     </div>
     <div class="nav-links">
-      <a href="#how-it-works">How It Works</a>
       <a href="#cipher-tool">Try It</a>
       <a href="#algorithm">Algorithm</a>
       <a href="/walkthrough" class="nav-link-highlight">Step-by-Step ↗</a>
@@ -33,90 +32,12 @@
       <p class="hero-sub">Transform any message into a sequence of chess moves using HMAC-keyed steganography. The encrypted game looks indistinguishable from a real chess match.</p>
       <div class="hero-cta">
         <a href="#cipher-tool" class="btn-primary">Try the Cipher</a>
-        <a href="#how-it-works" class="btn-ghost">Learn How ↓</a>
+        <a href="/walkthrough" class="btn-ghost">Step-by-Step ↗</a>
       </div>
     </div>
     <div class="hero-visual">
       <div class="floating-board" id="hero-board"></div>
       <div class="board-glow"></div>
-    </div>
-  </section>
-
-  <!-- How It Works -->
-  <section id="how-it-works" class="section">
-    <div class="container">
-      <div class="section-header">
-        <h2>How It Works</h2>
-        <p>Three elegant steps to hide your message inside a chess game</p>
-      </div>
-
-      <div class="steps-grid">
-        <!-- Step 1 -->
-        <div class="step-card">
-          <div class="step-num">01</div>
-          <div class="step-icon-wrap"><span class="step-piece">♟</span></div>
-          <h3>Text → Bits</h3>
-          <p>Your message is UTF-8 encoded and converted to a binary string. A 32-bit header stores the message length so decryption knows exactly when to stop.</p>
-          <div class="step-demo" id="demo-1">
-            <div class="d1-row">
-              <div class="d1-char-box">
-                <div class="d1-micro-label">char</div>
-                <div class="d1-char" id="d1-char">H</div>
-              </div>
-              <div class="d1-arrow">→</div>
-              <div class="d1-bin-box">
-                <div class="d1-micro-label">8 bits</div>
-                <div class="d1-bits" id="d1-bits">
-                  <span class="bc">0</span><span class="bc">1</span><span class="bc">0</span>
-                  <span class="bc">0</span><span class="bc">1</span><span class="bc">0</span>
-                  <span class="bc">0</span><span class="bc">0</span>
-                </div>
-              </div>
-            </div>
-            <div class="d1-stream-box">
-              <div class="d1-micro-label">bit stream</div>
-              <div class="d1-stream" id="d1-stream">
-                <span class="d1-block hdr" title="32-bit length header">[header]</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Step 2 -->
-        <div class="step-card">
-          <div class="step-num">02</div>
-          <div class="step-icon-wrap"><span class="step-piece">♝</span></div>
-          <h3>HMAC Key Ordering</h3>
-          <p>For every chess position, each legal move is ranked by <code>HMAC-SHA256(key, FEN|move)</code>. Only the key holder can reproduce this secret ordering.</p>
-          <div class="step-demo" id="demo-2">
-            <div class="d2-status" id="d2-status">Computing scores…</div>
-            <div class="d2-list" id="d2-list"></div>
-            <div class="d2-calc" id="d2-calc"></div>
-          </div>
-        </div>
-
-        <!-- Step 3 -->
-        <div class="step-card">
-          <div class="step-num">03</div>
-          <div class="step-icon-wrap"><span class="step-piece">♛</span></div>
-          <h3>Bits → Chess Moves</h3>
-          <p>Each bit chunk selects a move by its secret index. The played move carries hidden data while the game remains entirely legal and playable.</p>
-          <div class="step-demo" id="demo-3">
-            <div class="d3-micro-label">bit stream  (k=2, 4 usable moves)</div>
-            <div class="d3-chunks" id="d3-chunks"></div>
-            <div class="d3-eq" id="d3-eq"></div>
-            <div class="d3-moves" id="d3-moves"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Security note -->
-      <div class="info-card">
-        <div class="info-icon">🔐</div>
-        <div class="info-text">
-          <strong>Security model:</strong> Without the key, all legal chess moves look equally plausible. The HMAC ordering is computationally indistinguishable from random, making the cipher secure against brute-force analysis. The resulting PGN file is a valid chess game that can be opened in any chess application.
-        </div>
-      </div>
     </div>
   </section>
 
