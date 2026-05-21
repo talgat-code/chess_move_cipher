@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chess Move Cipher</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-brand">
+      <span class="nav-piece">♞</span>
+      Chess Move Cipher
+    </div>
+    <div class="nav-links">
+      <a href="#how-it-works">How It Works</a>
+      <a href="#cipher-tool">Try It</a>
+      <a href="#algorithm">Algorithm</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-badge">Steganographic Encryption</div>
+      <h1>Hide secrets inside<br><span class="gradient-text">chess games</span></h1>
+      <p class="hero-sub">Transform any message into a sequence of chess moves using HMAC-keyed steganography. The encrypted game looks indistinguishable from a real chess match.</p>
+      <div class="hero-cta">
+        <a href="#cipher-tool" class="btn-primary">Try the Cipher</a>
+        <a href="#how-it-works" class="btn-ghost">Learn How ↓</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="floating-board" id="hero-board"></div>
+      <div class="board-glow"></div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section id="how-it-works" class="section">
+    <div class="container">
+      <div class="section-header">
+        <h2>How It Works</h2>
+        <p>Three elegant steps to hide your message inside a chess game</p>
+      </div>
+
+      <div class="steps-grid">
+        <!-- Step 1 -->
+        <div class="step-card">
+          <div class="step-num">01</div>
+          <div class="step-icon-wrap"><span class="step-piece">♟</span></div>
+          <h3>Text → Bits</h3>
+          <p>Your message is UTF-8 encoded and converted to a binary string. A 32-bit header stores the message length so decryption knows exactly when to stop.</p>
+          <div class="step-demo" id="demo-1">
+            <div class="d1-row">
+              <div class="d1-char-box">
+                <div class="d1-micro-label">char</div>
+                <div class="d1-char" id="d1-char">H</div>
+              </div>
+              <div class="d1-arrow">→</div>
+              <div class="d1-bin-box">
+                <div class="d1-micro-label">8 bits</div>
+                <div class="d1-bits" id="d1-bits">
+                  <span class="bc">0</span><span class="bc">1</span><span class="bc">0</span>
+                  <span class="bc">0</span><span class="bc">1</span><span class="bc">0</span>
+                  <span class="bc">0</span><span class="bc">0</span>
+                </div>
+              </div>
+            </div>
+            <div class="d1-stream-box">
+              <div class="d1-micro-label">bit stream</div>
+              <div class="d1-stream" id="d1-stream">
+                <span class="d1-block hdr" title="32-bit length header">[header]</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="step-card">
+          <div class="step-num">02</div>
+          <div class="step-icon-wrap"><span class="step-piece">♝</span></div>
+          <h3>HMAC Key Ordering</h3>
+          <p>For every chess position, each legal move is ranked by <code>HMAC-SHA256(key, FEN|move)</code>. Only the key holder can reproduce this secret ordering.</p>
+          <div class="step-demo" id="demo-2">
+            <div class="d2-status" id="d2-status">Computing scores…</div>
+            <div class="d2-list" id="d2-list"></div>
+            <div class="d2-calc" id="d2-calc"></div>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="step-card">
+          <div class="step-num">03</div>
+          <div class="step-icon-wrap"><span class="step-piece">♛</span></div>
+          <h3>Bits → Chess Moves</h3>
+          <p>Each bit chunk selects a move by its secret index. The played move carries hidden data while the game remains entirely legal and playable.</p>
+          <div class="step-demo" id="demo-3">
+            <div class="d3-micro-label">bit stream  (k=2, 4 usable moves)</div>
+            <div class="d3-chunks" id="d3-chunks"></div>
+            <div class="d3-eq" id="d3-eq"></div>
+            <div class="d3-moves" id="d3-moves"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Security note -->
+      <div class="info-card">
+        <div class="info-icon">🔐</div>
+        <div class="info-text">
+          <strong>Security model:</strong> Without the key, all legal chess moves look equally plausible. The HMAC ordering is computationally indistinguishable from random, making the cipher secure against brute-force analysis. The resulting PGN file is a valid chess game that can be opened in any chess application.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cipher Tool -->
+  <section id="cipher-tool" class="section cipher-section">
+    <div class="container">
+      <div class="section-header">
+        <h2>Try the Cipher</h2>
+        <p>Encrypt a message or decode a .cpgn file</p>
+      </div>
+
+      <div class="tabs">
+        <button class="tab active" data-tab="encrypt">
+          <span>🔒</span> Encrypt
+        </button>
+        <button class="tab" data-tab="decrypt">
+          <span>🔓</span> Decrypt
+        </button>
+      </div>
+
+      <!-- Encrypt Panel -->
+      <div id="tab-encrypt" class="tab-panel active">
+        <div class="tool-layout">
+
+          <!-- Left: Inputs -->
+          <div class="tool-inputs">
+            <div class="form-group">
+              <label for="enc-message">Secret Message</label>
+              <textarea id="enc-message" rows="4" placeholder="Type your secret message here…"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="enc-key">Encryption Key</label>
+              <div class="input-wrap">
+                <input type="password" id="enc-key" placeholder="Enter a secret key…">
+                <button class="toggle-pw" data-target="enc-key" title="Show/hide key">👁</button>
+              </div>
+            </div>
+            <button id="encrypt-btn" class="btn-primary btn-full">
+              <span class="btn-icon">♟</span> Encrypt Message
+            </button>
+            <div id="enc-error" class="error-msg" style="display:none"></div>
+          </div>
+
+          <!-- Right: Chess board -->
+          <div class="tool-board">
+            <div class="board-wrap">
+              <div id="enc-board" class="chess-board"></div>
+              <div class="board-coords-files">
+                <span>a</span><span>b</span><span>c</span><span>d</span>
+                <span>e</span><span>f</span><span>g</span><span>h</span>
+              </div>
+              <div class="board-coords-ranks">
+                <span>8</span><span>7</span><span>6</span><span>5</span>
+                <span>4</span><span>3</span><span>2</span><span>1</span>
+              </div>
+            </div>
+
+            <div id="step-info" class="step-info" style="display:none">
+              <div class="step-row">
+                <div class="step-stat">
+                  <span class="stat-label">Move</span>
+                  <span class="stat-value mono" id="si-move">—</span>
+                </div>
+                <div class="step-stat">
+                  <span class="stat-label">Bits encoded</span>
+                  <span class="stat-value mono highlight-bits" id="si-bits">—</span>
+                </div>
+                <div class="step-stat">
+                  <span class="stat-label">Index / Total</span>
+                  <span class="stat-value mono" id="si-index">—</span>
+                </div>
+                <div class="step-stat">
+                  <span class="stat-label">Capacity</span>
+                  <span class="stat-value mono" id="si-k">—</span>
+                </div>
+              </div>
+            </div>
+
+            <div id="anim-controls" class="anim-controls" style="display:none">
+              <button id="btn-prev" class="ctrl-btn" title="Previous move">◀</button>
+              <button id="btn-play" class="ctrl-btn ctrl-play" title="Play/Pause">▶</button>
+              <button id="btn-next" class="ctrl-btn" title="Next move">▶</button>
+              <span id="anim-progress" class="anim-progress">0 / 0</span>
+              <div class="speed-wrap">
+                <label>Speed</label>
+                <input type="range" id="speed-slider" min="200" max="2000" value="700" step="100">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bit stream visualization -->
+        <div id="bits-section" class="bits-section" style="display:none">
+          <h3>Bit Stream <span class="tag" id="bits-total-tag"></span></h3>
+          <p class="bits-hint">Each coloured block = one move's payload. Hover to see details.</p>
+          <div id="bits-stream" class="bits-stream"></div>
+        </div>
+
+        <!-- Stats bar -->
+        <div id="enc-stats" class="stats-bar" style="display:none">
+          <div class="stat-item">
+            <span class="stat-n" id="stat-games">—</span>
+            <span class="stat-lbl">Games</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-n" id="stat-moves">—</span>
+            <span class="stat-lbl">Moves</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-n" id="stat-bits">—</span>
+            <span class="stat-lbl">Bits</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-n" id="stat-efficiency">—</span>
+            <span class="stat-lbl">Bits/move avg</span>
+          </div>
+        </div>
+
+        <!-- PGN Output -->
+        <div id="pgn-section" class="pgn-section" style="display:none">
+          <div class="pgn-header">
+            <h3>Encrypted PGN <span class="tag">.cpgn</span></h3>
+            <div class="pgn-actions">
+              <button id="copy-pgn" class="btn-ghost btn-sm">📋 Copy</button>
+              <button id="download-pgn" class="btn-ghost btn-sm">⬇ Download .cpgn</button>
+            </div>
+          </div>
+          <textarea id="pgn-output" class="pgn-textarea mono" readonly rows="8"></textarea>
+        </div>
+      </div>
+
+      <!-- Decrypt Panel -->
+      <div id="tab-decrypt" class="tab-panel">
+        <div class="tool-layout">
+          <div class="tool-inputs">
+            <div class="form-group">
+              <label for="dec-pgn">Encrypted PGN / .cpgn contents</label>
+              <textarea id="dec-pgn" rows="8" placeholder="Paste the PGN content here…" class="mono"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="dec-key">Decryption Key</label>
+              <div class="input-wrap">
+                <input type="password" id="dec-key" placeholder="Enter the secret key…">
+                <button class="toggle-pw" data-target="dec-key" title="Show/hide key">👁</button>
+              </div>
+            </div>
+            <button id="decrypt-btn" class="btn-primary btn-full">
+              <span class="btn-icon">♜</span> Decrypt Message
+            </button>
+            <div id="dec-error" class="error-msg" style="display:none"></div>
+          </div>
+
+          <div class="tool-board">
+            <div id="dec-result" class="dec-result" style="display:none">
+              <div class="result-icon">🔓</div>
+              <h3>Decrypted Message</h3>
+              <div id="dec-message" class="message-box"></div>
+              <button id="copy-message" class="btn-ghost btn-sm">📋 Copy message</button>
+            </div>
+            <div id="dec-placeholder" class="dec-placeholder">
+              <span class="placeholder-piece">♜</span>
+              <p>Paste a PGN and key to decrypt</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Algorithm deep dive -->
+  <section id="algorithm" class="section algo-section">
+    <div class="container">
+      <div class="section-header">
+        <h2>Algorithm Deep Dive</h2>
+        <p>The mathematics behind the cipher</p>
+      </div>
+
+      <div class="algo-grid">
+        <div class="algo-card">
+          <h3>♟ Bit Encoding</h3>
+          <p>With <em>n</em> legal moves at a position, we can hide <code>k = ⌊log₂(n)⌋</code> bits per move. We only use the first <code>2ᵏ</code> moves so the bit-to-index mapping is a clean bijection.</p>
+          <div class="algo-table">
+            <div class="algo-row header">
+              <span>Legal moves</span><span>k (bits)</span><span>Used moves</span>
+            </div>
+            <div class="algo-row"><span>20</span><span>4</span><span>16</span></div>
+            <div class="algo-row"><span>30</span><span>4</span><span>16</span></div>
+            <div class="algo-row"><span>35</span><span>5</span><span>32</span></div>
+            <div class="algo-row"><span>50</span><span>5</span><span>32</span></div>
+          </div>
+        </div>
+
+        <div class="algo-card">
+          <h3>♝ HMAC Secret Ordering</h3>
+          <p>For a board position FEN and move <em>m</em>, compute <code>HMAC-SHA256(key, FEN‖m)</code>. Sorting by this value creates a position-specific, key-dependent permutation of moves.</p>
+          <div class="algo-code">
+score(move) = HMAC-SHA256(
+  key    = "your-secret",
+  data   = FEN + "|" + move.uci()
+)
+moves.sort(by=score)
+          </div>
+        </div>
+
+        <div class="algo-card">
+          <h3>♛ Multi-game Support</h3>
+          <p>If a game reaches a position with fewer than 2 legal moves (checkmate, stalemate, or only 1 option) before all bits are encoded, a new game automatically starts from the initial position.</p>
+          <div class="algo-code">
+while bits_remaining:
+  if usable_moves == 0:
+    save_game()
+    start_new_game()
+    continue
+  play_move(encode(next_bits))
+          </div>
+        </div>
+
+        <div class="algo-card">
+          <h3>♜ Message Header</h3>
+          <p>The first 32 bits encode the message byte-length as a big-endian unsigned integer. During decryption, this tells the decoder exactly how many bits to extract — preventing padding artifacts.</p>
+          <div class="algo-code">
+bits = format(len(msg), "032b")
+     + "".join(format(b,"08b")
+               for b in msg.encode())
+
+# Decoding stops at:
+stop = 32 + length * 8
+          </div>
+        </div>
+      </div>
+
+      <div class="info-card accent">
+        <div class="info-icon">⚡</div>
+        <div class="info-text">
+          <strong>Entropy efficiency:</strong> A standard opening position has 20 legal moves, allowing 4 bits per move. An average chess position has ~30 legal moves (4 bits). Midgame tactical positions with 35+ moves reach 5 bits/move. A short message of 50 characters (432 bits including header) typically fits in ~100 moves — a realistic game length.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-brand">
+        <span>♞</span> Chess Move Cipher
+      </div>
+      <p>A steganographic cipher that hides messages inside legally valid chess games using HMAC-keyed move ordering.</p>
+    </div>
+  </footer>
+
+  <script src="/static/js/main.js"></script>
+</body>
+</html>
