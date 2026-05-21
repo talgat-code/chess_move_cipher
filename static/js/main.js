@@ -655,13 +655,15 @@ async function handleDecrypt() {
 // ─── Copy / Download ───────────────────────────────────────
 
 function initClipboardButtons() {
-  document.getElementById('copy-pgn').addEventListener('click', () => {
+  const copyPgn = document.getElementById('copy-pgn');
+  if (copyPgn) copyPgn.addEventListener('click', () => {
     const text = document.getElementById('pgn-output').value;
     navigator.clipboard.writeText(text).then(() => flash('copy-pgn', '✓ Copied!'));
   });
 
-  document.getElementById('download-pgn').addEventListener('click', () => {
-    const pgn = document.getElementById('download-pgn')._pgn;
+  const dlPgn = document.getElementById('download-pgn');
+  if (dlPgn) dlPgn.addEventListener('click', () => {
+    const pgn = dlPgn._pgn;
     if (!pgn) return;
     const blob = new Blob([pgn], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -672,7 +674,8 @@ function initClipboardButtons() {
     URL.revokeObjectURL(url);
   });
 
-  document.getElementById('copy-message').addEventListener('click', () => {
+  const copyMsg = document.getElementById('copy-message');
+  if (copyMsg) copyMsg.addEventListener('click', () => {
     const text = document.getElementById('dec-message').textContent;
     navigator.clipboard.writeText(text).then(() => flash('copy-message', '✓ Copied!'));
   });
@@ -738,32 +741,36 @@ function initReveal() {
 // ─── Boot ──────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
-  buildHeroBoard();
-  initTabs();
-  initPasswordToggles();
-  initEncBoard();
-  initClipboardButtons();
+  // Shared utilities (used on all pages)
   initNavbar();
+  initPasswordToggles();
   initSmoothScroll();
-  initReveal();
-
-  // Board sizing — explicit pixel squares
   resizeBoards();
   window.addEventListener('resize', resizeBoards);
 
-  // How-It-Works animated demos
-  watchDemo('demo-1', runDemo1);
-  watchDemo('demo-2', runDemo2);
-  watchDemo('demo-3', runDemo3);
+  // Main-page-only elements — guard with null checks
+  buildHeroBoard();
 
-  document.getElementById('encrypt-btn').addEventListener('click', handleEncrypt);
-  document.getElementById('decrypt-btn').addEventListener('click', handleDecrypt);
+  if (document.getElementById('enc-board')) {
+    initEncBoard();
+    initTabs();
+    initClipboardButtons();
+    initReveal();
 
-  // Allow Enter in key field to trigger encrypt/decrypt
-  document.getElementById('enc-key').addEventListener('keydown', e => {
-    if (e.key === 'Enter') handleEncrypt();
-  });
-  document.getElementById('dec-key').addEventListener('keydown', e => {
-    if (e.key === 'Enter') handleDecrypt();
-  });
+    watchDemo('demo-1', runDemo1);
+    watchDemo('demo-2', runDemo2);
+    watchDemo('demo-3', runDemo3);
+
+    const encBtn = document.getElementById('encrypt-btn');
+    if (encBtn) encBtn.addEventListener('click', handleEncrypt);
+
+    const decBtn = document.getElementById('decrypt-btn');
+    if (decBtn) decBtn.addEventListener('click', handleDecrypt);
+
+    const encKey = document.getElementById('enc-key');
+    if (encKey) encKey.addEventListener('keydown', e => { if (e.key === 'Enter') handleEncrypt(); });
+
+    const decKey = document.getElementById('dec-key');
+    if (decKey) decKey.addEventListener('keydown', e => { if (e.key === 'Enter') handleDecrypt(); });
+  }
 });

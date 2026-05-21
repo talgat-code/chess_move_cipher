@@ -93,6 +93,14 @@ code {
   transition: color 0.2s;
 }
 .nav-links a:hover { color: var(--text); }
+.nav-links .nav-link-highlight {
+  color: var(--gold);
+  border: 1px solid rgba(212,168,67,0.3);
+  padding: 4px 12px;
+  border-radius: 6px;
+  background: rgba(212,168,67,0.06);
+}
+.nav-links .nav-link-highlight:hover { background: rgba(212,168,67,0.14); color: var(--gold); }
 
 /* ─── Hero ─── */
 .hero {

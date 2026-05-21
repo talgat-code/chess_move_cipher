@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Step-by-Step Trace — Chess Move Cipher</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="/static/css/walkthrough.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-brand">
+      <a href="/" class="wt-back">← Back</a>
+      <span class="wt-nav-sep">|</span>
+      <span class="nav-piece">♞</span>
+      Chess Move Cipher
+      <span class="wt-nav-sep">·</span>
+      <span class="wt-nav-label">Step-by-Step Trace</span>
+    </div>
+  </nav>
+
+  <!-- Input Section -->
+  <section class="wt-input-section" id="wt-input-section">
+    <div class="container">
+      <div class="wt-page-header">
+        <h1>Step-by-Step <span class="gradient-text">Trace</span></h1>
+        <p>Watch every bit of your message become a chess move — step by step, with full explanations and board visualization.</p>
+      </div>
+
+      <div class="wt-mode-tabs">
+        <button class="wt-tab active" data-mode="encrypt">🔒 Encryption Trace</button>
+        <button class="wt-tab" data-mode="decrypt">🔓 Decryption Trace</button>
+      </div>
+
+      <!-- Encrypt form -->
+      <div id="wt-enc-form" class="wt-form">
+        <div class="wt-form-row">
+          <div class="form-group wt-fg-msg">
+            <label>Message <span class="wt-hint">max 40 chars</span></label>
+            <input type="text" id="wt-message" placeholder='e.g. "Hi!"' maxlength="40" autocomplete="off">
+          </div>
+          <div class="form-group wt-fg-key">
+            <label>Secret Key</label>
+            <div class="input-wrap">
+              <input type="password" id="wt-key-enc" placeholder="your-key">
+              <button class="toggle-pw" data-target="wt-key-enc">👁</button>
+            </div>
+          </div>
+          <div class="form-group wt-fg-btn">
+            <label>&nbsp;</label>
+            <button id="wt-run-enc" class="btn-primary wt-run-btn">
+              <span>▶</span> Run Trace
+            </button>
+          </div>
+        </div>
+        <div id="wt-enc-error" class="error-msg" style="display:none"></div>
+      </div>
+
+      <!-- Decrypt form -->
+      <div id="wt-dec-form" class="wt-form" style="display:none">
+        <div class="form-group">
+          <label>Encrypted PGN (.cpgn contents)</label>
+          <textarea id="wt-pgn" rows="5" class="mono" placeholder="Paste your .cpgn file content here…"></textarea>
+        </div>
+        <div class="wt-form-row">
+          <div class="form-group wt-fg-key">
+            <label>Secret Key</label>
+            <div class="input-wrap">
+              <input type="password" id="wt-key-dec" placeholder="your-key">
+              <button class="toggle-pw" data-target="wt-key-dec">👁</button>
+            </div>
+          </div>
+          <div class="form-group wt-fg-btn">
+            <label>&nbsp;</label>
+            <button id="wt-run-dec" class="btn-primary wt-run-btn">
+              <span>▶</span> Run Trace
+            </button>
+          </div>
+        </div>
+        <div id="wt-dec-error" class="error-msg" style="display:none"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════ TRACE VIEWER ══════════════ -->
+  <section class="wt-viewer" id="wt-viewer" style="display:none">
+
+    <!-- Step header bar -->
+    <div class="wt-step-bar">
+      <div class="wt-step-counter">
+        Step <strong id="wt-step-num">1</strong>&thinsp;/&thinsp;<strong id="wt-step-total">1</strong>
+      </div>
+      <div class="wt-step-dots-wrap">
+        <div class="wt-step-dots" id="wt-step-dots"></div>
+      </div>
+      <div class="wt-step-badge" id="wt-step-badge">intro</div>
+    </div>
+
+    <!-- Title of current step -->
+    <div class="wt-step-title-row">
+      <div class="wt-step-title" id="wt-step-title">—</div>
+    </div>
+
+    <!-- ── Main two-column area ── -->
+    <div class="wt-main-area">
+
+      <!-- Left: Chess board + arrows -->
+      <div class="wt-board-panel">
+        <div class="board-with-arrows" id="board-wrap">
+          <div id="trace-board" class="chess-board"></div>
+          <svg id="board-svg" class="board-overlay">
+            <defs>
+              <marker id="mh-legal"    markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="rgba(100,130,220,0.7)"/></marker>
+              <marker id="mh-usable"   markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="rgba(50,210,80,0.9)"/></marker>
+              <marker id="mh-selected" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="rgba(212,168,67,1)"/></marker>
+              <marker id="mh-dim"      markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="rgba(100,100,100,0.35)"/></marker>
+            </defs>
+          </svg>
+        </div>
+        <div class="wt-legend" id="wt-legend" style="display:none">
+          <div class="wt-legend-row">
+            <span class="lbox legal"></span><span>All legal moves</span>
+          </div>
+          <div class="wt-legend-row">
+            <span class="lbox usable"></span><span>Usable (2<sup>k</sup> moves)</span>
+          </div>
+          <div class="wt-legend-row">
+            <span class="lbox selected"></span><span>Selected / played</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Step info panel -->
+      <div class="wt-info-panel" id="wt-info-panel">
+        <div id="wt-step-body">
+          <!-- Content rendered by JS per step type -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Controls ── -->
+    <div class="wt-controls">
+      <div class="wt-ctrl-group">
+        <button id="wt-first" class="ctrl-btn" title="First step">⏮</button>
+        <button id="wt-prev"  class="ctrl-btn" title="Previous">◀</button>
+        <button id="wt-play"  class="ctrl-btn ctrl-play" title="Play / Pause">▶</button>
+        <button id="wt-next"  class="ctrl-btn" title="Next">▶▶</button>
+        <button id="wt-last"  class="ctrl-btn" title="Last step">⏭</button>
+      </div>
+
+      <div class="wt-slider-wrap">
+        <input type="range" id="wt-slider" min="0" value="0" step="1" class="wt-slider">
+      </div>
+
+      <div class="wt-speed-group">
+        <span class="wt-speed-label">Speed</span>
+        <button class="wt-speed active" data-ms="2500">1×</button>
+        <button class="wt-speed" data-ms="1200">2×</button>
+        <button class="wt-speed" data-ms="500">4×</button>
+      </div>
+    </div>
+
+    <!-- ── Bit stream ── -->
+    <div class="wt-bitstream-section">
+      <div class="wt-bs-header">
+        <span class="wt-bs-title">Bit Stream</span>
+        <span class="wt-bs-info" id="wt-bs-info"></span>
+      </div>
+      <div class="wt-bs-scroll">
+        <div class="wt-bs" id="wt-bitstream"></div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- Loading overlay -->
+  <div id="wt-loading" class="wt-loading-overlay" style="display:none">
+    <div class="wt-loading-box">
+      <div class="wt-spinner"></div>
+      <p>Computing trace…<br><small>HMAC for all moves at each position</small></p>
+    </div>
+  </div>
+
+  <script src="/static/js/main.js"></script>
+  <script src="/static/js/walkthrough.js"></script>
+</body>
+</html>
