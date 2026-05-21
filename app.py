@@ -3,6 +3,7 @@ import chess
 import hashlib
 import hmac as hmac_lib
 import math
+import os
 from main import ChessCipherEncoder, ChessCipherDecoder, BitConverter, MoveOracle
 
 app = Flask(__name__)
@@ -400,4 +401,7 @@ def trace():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5050)
+    debug = os.getenv("FLASK_DEBUG", "0") == "1"
+    host = os.getenv("FLASK_HOST", "0.0.0.0")
+    port = int(os.getenv("FLASK_PORT", "5050"))
+    app.run(debug=debug, host=host, port=port)
